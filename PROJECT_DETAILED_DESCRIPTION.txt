@@ -2,6 +2,7 @@
 CUSTOMER CHURN PREDICTION & BUSINESS ANALYTICS
 DETAILED PROJECT DOCUMENTATION, FILE INVENTORY & MODEL ARCHITECTURE
 Target Track: Enterprise Data Science Portfolio / Junior Data Scientist Portfolio
+Live Web App: https://customer-churn-prediction-business-analytics.streamlit.app/
 ================================================================================
 
 TABLE OF CONTENTS:

@@ -1,5 +1,6 @@
 # 📈 Customer Churn Prediction & Business Analytics
 
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://customer-churn-prediction-business-analytics.streamlit.app/)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
 [![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.3+-F7931E?style=flat&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
 [![Pandas](https://img.shields.io/badge/Pandas-2.0+-150458?style=flat&logo=pandas&logoColor=white)](https://pandas.pydata.org/)
@@ -7,6 +8,7 @@
 [![MySQL / SQL](https://img.shields.io/badge/SQL-MySQL%20%7C%20SQLite-4479A1?style=flat&logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+> 🌐 **Live Web Application**: [https://customer-churn-prediction-business-analytics.streamlit.app/](https://customer-churn-prediction-business-analytics.streamlit.app/)  
 > **Portfolio Track**: Enterprise Data Science / Junior Data Scientist Portfolio  
 > **Domain**: Telecommunications & Customer Retention Analytics  
 > **Dataset**: IBM Telco Customer Churn (7,043 customer accounts, 21 initial attributes)
@@ -229,7 +231,8 @@ jupyter notebook notebooks/
 - `notebooks/04_model_training.ipynb`
 
 ### 5. Launch Interactive Streamlit Web UI Dashboard
-To run the live interactive web dashboard:
+- 🌐 **Live Cloud App**: [https://customer-churn-prediction-business-analytics.streamlit.app/](https://customer-churn-prediction-business-analytics.streamlit.app/)
+- Or run locally on your machine:
 ```bash
 streamlit run app.py
 ```
