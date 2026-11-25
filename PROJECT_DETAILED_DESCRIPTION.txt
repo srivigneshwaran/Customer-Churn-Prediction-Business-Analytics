@@ -1,0 +1,521 @@
+================================================================================
+CUSTOMER CHURN PREDICTION & BUSINESS ANALYTICS
+DETAILED PROJECT DOCUMENTATION, FILE INVENTORY & MODEL ARCHITECTURE
+Target Track: Enterprise Data Science Portfolio / Junior Data Scientist Portfolio
+================================================================================
+
+TABLE OF CONTENTS:
+1. Executive Project Overview
+2. Complete File Directory & Inventory
+3. File-by-File Detailed Explanation
+4. Machine Learning Models: What Models Were Used, Why, & Comparisons
+5. Module-by-Module Technical Walkthrough & Key Findings
+6. SQL Business Analytics & Executive KPI Breakdown
+7. Business Recommendations & Financial Impact
+8. How to Test & Run Every File
+9. Interview Talking Points & Frequently Asked Questions (Data Science Aligned)
+
+================================================================================
+1. EXECUTIVE PROJECT OVERVIEW
+================================================================================
+Problem Statement:
+A telecommunications provider has 7,043 customers generating over $456,000 in
+Monthly Recurring Revenue (MRR). Each month, a significant percentage of customers
+cancel their subscriptions (churn). Acquiring a new customer costs 5 to 25 times
+more than retaining an existing one.
+
+Core Objectives:
+- Identify patterns and behavioral drivers causing customer departures.
+- Statistically validate whether differences in charges and tenure are significant.
+- Predict whether an individual customer will churn using Machine Learning.
+- Provide transparent Odds Ratios explaining why a customer is flagged as high risk.
+- Write enterprise SQL queries to quantify revenue at risk and extract targeted
+  outreach lists.
+
+Technology Stack:
+- Python 3.12 (Core programming and data science ecosystem)
+- Pandas & NumPy (Data wrangling, type casting, array operations)
+- Matplotlib & Seaborn (Statistical visualization, distributions, heatmaps)
+- SciPy Stats (Parametric & non-parametric hypothesis tests, Cramer's V, Bayes)
+- Scikit-Learn (Data pipelines, scaling, encoding, modeling, evaluation)
+- Joblib (Model serialization for production deployment)
+- SQL / SQLite / MySQL (Database DDL schema, window functions, cohort analytics)
+- Jupyter Notebooks (Interactive development, rich output rendering)
+
+================================================================================
+2. COMPLETE FILE DIRECTORY & INVENTORY
+================================================================================
+
+Customer-Churn-Prediction-Business-Analytics/
+│
+├── data/
+│   ├── WA_Fn-UseC_-Telco-Customer-Churn.csv   (Raw dataset, 7,043 rows, 21 columns)
+│   └── cleaned_telco_churn.csv              (Cleaned dataset, 7,043 rows, 23 columns)
+│
+├── notebooks/
+│   ├── 01_data_cleaning.ipynb               (Module 1: Missing values & type fixes)
+│   ├── 02_eda.ipynb                         (Module 2: Visual distributions & cohorts)
+│   ├── 03_statistical_analysis.ipynb        (Module 3: Hypothesis tests & associations)
+│   └── 04_model_training.ipynb              (Module 4: ML pipelines, metrics & odds ratios)
+│
+├── sql/
+│   └── customer_analysis.sql                (Module 5: 10 production SQL analytics queries)
+│
+├── models/
+│   └── churn_model.pkl                      (Trained production pipeline: scaler+encoder+model)
+│
+├── reports/
+│   └── figures/                             (11 high-resolution saved chart images)
+│       ├── 01_churn_distribution.png
+│       ├── 02_tenure_vs_churn.png
+│       ├── 03_monthly_charges_vs_churn.png
+│       ├── 04_contract_type_churn.png
+│       ├── 05_internet_service_techsupport_churn.png
+│       ├── 06_payment_method_churn.png
+│       ├── 08_correlation_matrix.png
+│       ├── 09_cramers_v_association.png
+│       ├── 10_confusion_matrices.png
+│       ├── 11_roc_pr_curves.png
+│       └── 12_feature_importance_odds_ratios.png
+│
+├── src/
+│   ├── data_cleaning.py                     (Reusable data cleaning ETL script)
+│   ├── predict_churn.py                     (Interactive CLI prediction tool)
+│   └── run_sql_analysis.py                  (Automated test runner for SQL queries)
+│
+├── app.py                                   (Interactive Streamlit Web Dashboard UI)
+├── requirements.txt                         (List of required Python libraries)
+├── .gitignore                               (Git ignore rule definitions)
+├── README.md                                (Markdown project presentation)
+└── PROJECT_DETAILED_DESCRIPTION.txt         (This comprehensive text reference file)
+
+================================================================================
+3. FILE-BY-FILE DETAILED EXPLANATION
+================================================================================
+
+DATA FOLDER:
+--------------------------------------------------------------------------------
+1. data/WA_Fn-UseC_-Telco-Customer-Churn.csv
+   - What it contains: The raw, unmodified IBM Telco Customer Churn dataset.
+   - Rows & Columns: 7,043 rows, 21 columns.
+   - Attributes:
+     * Demographics: customerID, gender, SeniorCitizen, Partner, Dependents
+     * Services: PhoneService, MultipleLines, InternetService, OnlineSecurity,
+       OnlineBackup, DeviceProtection, TechSupport, StreamingTV, StreamingMovies
+     * Account Details: tenure, Contract, PaperlessBilling, PaymentMethod,
+       MonthlyCharges, TotalCharges, Churn
+   - Simple Explanation: The raw source of truth downloaded from IBM/Kaggle.
+
+2. data/cleaned_telco_churn.csv
+   - What it contains: The sanitized, cleaned, and feature-engineered dataset.
+   - Rows & Columns: 7,043 rows, 23 columns.
+   - Modifications:
+     * Converted TotalCharges from text (object) to float64.
+     * Handled 11 blank whitespace values by setting them to 0.0 (all 11 were
+       new customers with tenure = 0 months).
+     * Removed leading/trailing whitespace across all string columns.
+     * Verified zero duplicate customer records.
+     * Added Churn_Binary (integer 1 for Yes, 0 for No).
+     * Added TenureGroup (cohort bins: 0-12 Mo, 13-24 Mo, etc.).
+   - Simple Explanation: The clean input dataset used by all downstream notebooks,
+     models, and SQL queries.
+
+NOTEBOOKS FOLDER:
+--------------------------------------------------------------------------------
+3. notebooks/01_data_cleaning.ipynb
+   - What it contains: Step-by-step data audit, missing value diagnostics, type
+     casting, and summary tables.
+   - Key Insight: Explains why TotalCharges was improperly stored as text due to
+     empty spaces. Rather than dropping records, domain-aware imputation sets
+     TotalCharges to 0.0 for zero-tenure accounts.
+   - Simple Explanation: Demonstrates professional data engineering hygiene.
+
+4. notebooks/02_eda.ipynb
+   - What it contains: Exploratory visual analysis across all features against Churn.
+   - Visuals Embedded: Donut charts, KDE probability densities, boxplots, stacked
+     bars, and correlation matrices.
+   - Key Findings:
+     * Overall churn rate is 26.54%.
+     * Month-to-month contracts generate 88.6% of all churn.
+     * First-year customers experience a 47.4% churn rate.
+     * Electronic check users churn at 45.3% (vs ~15% for autopay).
+     * Fiber optic customers churn at 41.9% due to premium pricing without support.
+   - Simple Explanation: The visual story of who leaves and why.
+
+5. notebooks/03_statistical_analysis.ipynb
+   - What it contains: Formal mathematical and statistical testing:
+     * Descriptive metrics (Mean, Std Dev, Median, IQR) for churn vs retained.
+     * Point-Biserial correlation (tenure r = -0.352, monthly charges r = +0.193).
+     * Welch's two-sample t-test on Monthly Charges (t = 18.40, p = 8.59e-73).
+     * Mann-Whitney U test on Monthly Charges (p = 1.09e-58).
+     * Welch's two-sample t-test on Tenure (t = 34.82, p = 7.79e-208).
+     * Chi-Square Test of Independence and Cramer's V association rankings.
+     * Bayesian conditional probability update formulas.
+   - Simple Explanation: Proves using mathematics that customer behavior patterns
+     are statistically significant and not random chance.
+
+6. notebooks/04_model_training.ipynb
+   - What it contains: Complete Machine Learning workflow:
+     * Stratified 80/20 train/test split (preserving 26.5% churn ratio).
+     * ColumnTransformer with StandardScaler and OneHotEncoder(drop='first').
+     * Training and comparison of Logistic Regression, Random Forest, Gradient Boosting.
+     * Confusion matrices, ROC curves, and Precision-Recall curves.
+     * Odds Ratio extraction ($e^\beta$) for every single feature.
+     * Export of production pipeline to models/churn_model.pkl.
+     * Real-time sample inference demo scoring high-risk and low-risk mock profiles.
+   - Simple Explanation: Builds and evaluates the predictive engine.
+
+SQL FOLDER:
+--------------------------------------------------------------------------------
+7. sql/customer_analysis.sql
+   - What it contains: Full SQL script with DDL schema and 10 business queries:
+     1. Executive KPI Summary (Customers, churn rate, total MRR, active MRR).
+     2. Customers grouped by Contract Type.
+     3. Average monthly charges by churn status & contract.
+     4. Churn percentage and revenue by payment method.
+     5. Revenue comparison: Active MRR ($316.9k) vs Lost MRR ($139.1k).
+     6. Cross-tabulation of Internet Service and Tech Support.
+     7. Tenure cohort velocity analysis (0-12 months up to 61-72 months).
+     8. High-risk profile cohort ($51.9k monthly revenue at immediate risk).
+     9. Senior citizen vulnerability analysis (41.7% churn in seniors).
+     10. SQL Window Function DENSE_RANK() generating the prioritized outreach list.
+   - Simple Explanation: Enterprise database scripts ready for MySQL/PostgreSQL/SQLite.
+
+MODELS FOLDER:
+--------------------------------------------------------------------------------
+8. models/churn_model.pkl
+   - What it contains: A pickled Scikit-Learn Pipeline containing:
+     * Preprocessor (StandardScaler for 3 numeric columns + OneHotEncoder for 16 categoricals)
+     * Trained Logistic Regression estimator with balanced class weights.
+   - File Size: ~9.1 KB.
+   - Simple Explanation: The deployable model that can be loaded in Python to score
+     any customer with: model.predict_proba(customer_data).
+
+REPORTS FOLDER:
+--------------------------------------------------------------------------------
+9. reports/figures/
+   - 11 high-resolution PNG charts:
+     * 01_churn_distribution.png: Donut & count breakdown of churn.
+     * 02_tenure_vs_churn.png: Probability density & cohort churn bar chart.
+     * 03_monthly_charges_vs_churn.png: Boxplots showing churners paying more.
+     * 04_contract_type_churn.png: Churn rate by Month-to-month, 1-Yr, 2-Yr.
+     * 05_internet_service_techsupport_churn.png: Impact of support services.
+     * 06_payment_method_churn.png: Electronic check vs credit card autopay.
+     * 08_correlation_matrix.png: Heatmap of numerical predictors.
+     * 09_cramers_v_association.png: Ranked association strength bar chart.
+     * 10_confusion_matrices.png: Side-by-side confusion matrices for all 3 models.
+     * 11_roc_pr_curves.png: ROC curves and Precision-Recall curves.
+     * 12_feature_importance_odds_ratios.png: Horizontal bar chart of Odds Ratios.
+
+SOURCE CODE FOLDER (src/):
+--------------------------------------------------------------------------------
+10. src/data_cleaning.py
+    - Reusable Python ETL script containing load_raw_data(), clean_data(), save_cleaned_data().
+11. src/predict_churn.py
+    - Interactive CLI prediction tool to test customer profiles and output churn probabilities.
+12. src/run_sql_analysis.py
+    - Automated test runner that spins up an in-memory SQL database, loads the
+      cleaned CSV, executes all 10 SQL queries, and prints formatted tables.
+
+ROOT FILES:
+--------------------------------------------------------------------------------
+14. requirements.txt: All project Python packages with versions.
+15. .gitignore: Prevents cache and checkpoint files from being pushed to Git.
+16. README.md: The markdown portfolio showcase with badges and diagrams.
+17. PROJECT_DETAILED_DESCRIPTION.txt: This file.
+
+================================================================================
+4. MACHINE LEARNING MODELS: WHAT MODELS WERE USED, WHY, & COMPARISONS
+================================================================================
+
+We trained, benchmarked, and evaluated THREE diverse algorithms on the same
+stratified 80/20 test split (1,409 unseen customer accounts):
+
+MODEL BENCHMARK COMPARISON TABLE:
+--------------------------------------------------------------------------------
+Metric              Logistic Regression      Random Forest      Gradient Boosting
+--------------------------------------------------------------------------------
+Model Family        Linear (Sigmoid)         Ensemble Bagging   Ensemble Boosting
+Class Weighting     Balanced                 Balanced           Default
+Accuracy            73.95%                   75.51%             80.34%
+Precision           50.60%                   52.57%             66.11%
+Recall              78.61%                   79.41%             53.21%
+F1-Score            0.6157                   0.6326             0.5896
+ROC-AUC             0.8418                   0.8434             0.8434
+PR-AUC              0.6345                   0.6513             0.6567
+Interpretability    100% (Odds Ratios)       Moderate (Gini)    Low (Ensemble)
+Deployment Weight   9.1 KB                   >2.5 MB            >1.8 MB
+PRIMARY SELECTION   YES (Selected Model)     Benchmark          Benchmark
+--------------------------------------------------------------------------------
+
+DETAILED RATIONALE FOR EACH MODEL:
+
+1. LOGISTIC REGRESSION WITH BALANCED WEIGHTING (PRIMARY PRODUCTION MODEL):
+   - How it works:
+     Computes the linear combination of weighted features:
+       z = beta_0 + beta_1*X_1 + beta_2*X_2 + ... + beta_k*X_k
+     Then passes z through the logistic sigmoid function:
+       P(Churn) = 1 / (1 + e^(-z))
+   - Why it was selected:
+     a) Mathematical Transparency & Odds Ratios:
+        Unlike tree ensembles that output obscure feature importance scores,
+        Logistic Regression coefficients directly translate to Odds Ratios ($e^\beta$).
+        For example:
+        * Contract_Month-to-month has beta = +0.765 -> Odds Ratio = 2.15.
+          This means Month-to-Month customers have 2.15 times higher odds of
+          churning compared to the baseline.
+        * Contract_Two year has beta = -1.381 -> Odds Ratio = 0.25.
+          This means signing a 2-year contract reduces churn odds by 75%.
+     b) Balanced Class Weighting (class_weight='balanced'):
+        Because only 26.54% of customers churn, a standard model can easily achieve
+        73.5% accuracy by simply predicting "No Churn" for every customer.
+        In churn prevention, missing a churning customer (False Negative) costs the
+        business hundreds of dollars in lost lifetime value, whereas reaching out
+        to a loyal customer (False Positive) costs only an email or discount coupon.
+        Balanced weighting penalizes false negatives heavily, achieving 78.61% Recall.
+     c) Regulatory & Corporate Governance:
+        In large enterprise client accounts (such as telecom or banking),
+        models must be auditable, explainable, and compliant with fair lending/pricing.
+
+2. RANDOM FOREST CLASSIFIER (BENCHMARK MODEL):
+   - How it works:
+     Builds 150 independent decision trees using bagging (bootstrap aggregation)
+     and random feature subsets, then averages their probabilistic predictions.
+   - Why it was used:
+     a) Captures Non-Linear Interactions:
+        Tests whether complex multi-feature interactions (e.g., tenure < 6 AND
+        charges > $90 AND streaming = Yes) create non-linear risk spikes that
+        a linear model might miss.
+     b) Benchmark Validation:
+        Random Forest achieved 0.8434 ROC-AUC compared to Logistic Regression's
+        0.8418 ROC-AUC. The difference is marginal (less than 0.002). This proves
+        that the underlying relationships are largely linear log-odds, confirming
+        that Logistic Regression is the better enterprise choice due to its simplicity.
+
+3. GRADIENT BOOSTING CLASSIFIER (BENCHMARK MODEL):
+   - How it works:
+     Builds decision trees sequentially, where each new tree is trained to predict
+     the pseudo-residuals (errors) of the preceding trees.
+   - Why it was used:
+     a) High Precision Baseline:
+        Gradient Boosting achieved the highest overall Accuracy (80.34%) and
+        Precision (66.11%).
+     b) Illustrates the Precision-Recall Trade-off in Business:
+        Gradient Boosting's Recall dropped to only 53.21%—meaning it missed
+        almost half of all churning customers. This serves as an interview
+        talking point demonstrating why raw accuracy is misleading for imbalanced
+        business problems.
+
+================================================================================
+5. MODULE-BY-MODULE TECHNICAL WALKTHROUGH & KEY FINDINGS
+================================================================================
+
+MODULE 1: DATA CLEANING & PREPROCESSING
+- Input: 7,043 rows, 21 columns.
+- Issue Discovered: TotalCharges was stored as type object (string).
+- Root Cause Analysis: 11 rows contained empty spaces (' '). All 11 records had
+  tenure = 0. These were brand new signups who had not yet completed a billing cycle.
+- Solution: Rather than dropping records (which introduces survivorship bias) or
+  filling with the global median (which distorts newly onboarded accounts), we
+  imputed 0.0, matching real business reality.
+- Output: 7,043 rows, 23 columns saved to data/cleaned_telco_churn.csv.
+
+MODULE 2: EXPLORATORY DATA ANALYSIS (EDA)
+- Baseline Metrics: 1,869 churned customers (26.54%), 5,174 retained (73.46%).
+- Tenure Curve:
+  * 0 - 12 Months: 47.4% churn rate (Critical vulnerability window).
+  * 13 - 24 Months: 28.7% churn rate.
+  * 61 - 72 Months: 6.6% churn rate (High brand loyalty).
+- Contract Breakdown:
+  * Month-to-month: 42.71% churn (Represents 88.6% of all churn volume).
+  * One year: 11.27% churn.
+  * Two year: 2.83% churn.
+- Internet Service Paradox:
+  * Fiber Optic: 41.89% churn (Average bill: $87+).
+  * DSL: 18.96% churn (Average bill: $58+).
+  * No Internet: 7.40% churn.
+- Payment Methods:
+  * Electronic check: 45.29% churn.
+  * Credit card (automatic): 15.24% churn.
+  * Bank transfer (automatic): 16.71% churn.
+
+MODULE 3: STATISTICAL ANALYSIS & HYPOTHESIS TESTING
+- Parametric Test 1: Monthly Charges Difference (Welch's t-test)
+  * Churned Mean: $74.44 (std: $24.67) | Retained Mean: $61.27 (std: $31.09)
+  * Welch's t = 18.40, p-value = 8.59e-73 -> Reject H0.
+  * Conclusion: Churners pay significantly higher monthly bills.
+- Non-Parametric Test: Mann-Whitney U test on Monthly Charges
+  * U = 3,747,404.5, p-value = 1.09e-58 -> Confirmed non-parametric robustness.
+- Parametric Test 2: Tenure Difference (Welch's t-test)
+  * Retained Mean: 37.57 months | Churned Mean: 17.98 months
+  * Welch's t = 34.82, p-value = 7.79e-208 -> Reject H0.
+  * Conclusion: Churners leave significantly earlier in their lifecycle.
+- Categorical Association (Chi-Square & Cramer's V):
+  * Contract: Cramer's V = 0.410 (Strongest predictor)
+  * OnlineSecurity: Cramer's V = 0.347 (Strong)
+  * TechSupport: Cramer's V = 0.337 (Strong)
+  * InternetService: Cramer's V = 0.322 (Strong)
+  * PaymentMethod: Cramer's V = 0.301 (Strong)
+  * PaperlessBilling: Cramer's V = 0.192 (Moderate)
+  * SeniorCitizen: Cramer's V = 0.150 (Moderate)
+- Bayesian Probability:
+  * P(Churn) prior = 26.54%
+  * P(Churn | Month-to-month) = 42.71%
+  * P(Churn | M2M + Fiber Optic + Electronic Check + Tenure <= 12) = 71.16%
+
+MODULE 4: MACHINE LEARNING MODELING
+- Preprocessing: Numerical features scaled with StandardScaler; categorical features
+  encoded with OneHotEncoder(drop='first', sparse_output=False).
+- Split: Stratified 80% train (5,634 rows), 20% test (1,409 rows).
+- Logistic Regression Evaluation on Test Set:
+  * True Positives (Caught churners): 294 out of 374 (78.61% Recall)
+  * True Negatives (Retained correctly): 748 out of 1,035 (72.27% Specificity)
+  * ROC-AUC: 0.8418
+  * PR-AUC: 0.6345
+- Top Risk Factors Increasing Churn Odds:
+  * InternetService_Fiber optic: Odds Ratio = 2.63 (+163% odds)
+  * TotalCharges: Odds Ratio = 1.58 (+58% odds)
+  * PaymentMethod_Electronic check: Odds Ratio = 1.49 (+49% odds)
+  * PaperlessBilling_Yes: Odds Ratio = 1.40 (+40% odds)
+- Top Protective Factors Decreasing Churn Odds:
+  * Contract_Two year: Odds Ratio = 0.25 (75% reduction in odds)
+  * tenure: Odds Ratio = 0.32 (68% reduction in odds per std dev)
+  * Contract_One year: Odds Ratio = 0.49 (51% reduction in odds)
+  * TechSupport_Yes: Odds Ratio = 0.73 (27% reduction in odds)
+  * OnlineSecurity_Yes: Odds Ratio = 0.68 (32% reduction in odds)
+
+================================================================================
+6. SQL BUSINESS ANALYTICS & EXECUTIVE KPI BREAKDOWN
+================================================================================
+
+Executed in src/run_sql_analysis.py against sql/customer_analysis.sql:
+
+1. Executive KPI Summary:
+   - Total Customer Base: 7,043
+   - Churned Customers: 1,869 (26.54% overall churn rate)
+   - Active Customers: 5,174 (73.46%)
+   - Total Monthly Recurring Revenue (MRR): $456,116.60
+   - Active Monthly Revenue: $316,985.75
+   - Lost Monthly Revenue to Churn: $139,130.85 (30.5% of total MRR lost!)
+
+2. Contract Distribution & Churn Rate:
+   - Month-to-month: 3,875 customers (55.0% of base), 1,655 churned (42.71% churn)
+   - One year: 1,473 customers (20.9% of base), 166 churned (11.27% churn)
+   - Two year: 1,695 customers (24.1% of base), 48 churned (2.83% churn)
+
+3. Payment Method Churn Breakdown:
+   - Electronic check: 2,365 customers, 1,071 churned (45.29% churn, $180k MRR)
+   - Mailed check: 1,612 customers, 308 churned (19.11% churn)
+   - Bank transfer (automatic): 1,544 customers, 258 churned (16.71% churn)
+   - Credit card (automatic): 1,522 customers, 232 churned (15.24% churn)
+
+4. Support Services Mitigation:
+   - Fiber Optic WITHOUT Tech Support: 49.37% churn (1,101 churned out of 2,230)
+   - Fiber Optic WITH Tech Support: 22.63% churn (196 churned out of 866)
+   - Conclusion: Bundling Tech Support cuts Fiber Optic churn by more than half!
+
+5. High-Risk Vulnerability Cohort (Query 8):
+   - Definition: Month-to-month + Fiber Optic + Electronic Check + Tenure <= 12
+   - Total Size: 631 customers
+   - Churned Count: 449 customers (71.16% churn rate!)
+   - Monthly Revenue at Risk: $51,934.95
+   - Annualized Revenue at Risk: $623,219.40
+
+6. Window Function Priority Outreach List (Query 10):
+   - Uses DENSE_RANK() OVER (ORDER BY MonthlyCharges DESC, tenure ASC)
+   - Filters active subscribers paying $108 - $111/month on month-to-month
+     fiber optic plans without tech support, serving as an immediate CRM call list.
+
+================================================================================
+7. BUSINESS RECOMMENDATIONS & FINANCIAL IMPACT
+================================================================================
+
+1. "Transition & Save" Contract Migration Campaign:
+   - Observation: Month-to-month customers represent 88.6% of all churn volume.
+   - Action: Offer a 15% discount or 3 months of free streaming for signing an
+     annual agreement.
+   - Projected Impact: Migrating 20% of Month-to-Month accounts saves ~330 customers
+     and safeguards ~$260,000 in annualized revenue.
+
+2. Mandatory Fiber Optic Tech Support Bundling:
+   - Observation: 49.4% of Fiber Optic customers without tech support cancel.
+   - Action: Bundle 6 months of complimentary Tech Support and Online Security
+     into all new Fiber installations.
+   - Projected Impact: Reduces Fiber Optic churn towards the 22.6% benchmark.
+
+3. Autopay Migration Incentive:
+   - Observation: Electronic Check users churn at 45.3% vs ~15% for Autopay.
+   - Action: Provide a recurring $3.00/month bill credit for enrolling in
+     automated recurring credit card or bank transfer billing.
+   - Projected Impact: Eliminates manual billing friction and involuntary churn.
+
+4. Early 0-12 Month Onboarding Lifecycle Triggers:
+   - Observation: 47.4% of all churn occurs during months 0 to 12.
+   - Action: Automated customer success check-ins at Day 14, Day 45, and Day 90.
+   - Projected Impact: Improves first-year subscriber retention by 15-20%.
+
+================================================================================
+8. HOW TO TEST & RUN EVERY FILE
+================================================================================
+
+Step 1: Open PowerShell / Terminal in project directory:
+   cd c:\Users\HP\OneDrive\Desktop\project\Customer-Churn-Prediction-Business-Analytics
+
+Step 2: Install required packages:
+   pip install -r requirements.txt
+
+Step 3: Run data cleaning ETL:
+   python src/data_cleaning.py
+
+Step 4: Run automated SQL analytics engine:
+   python src/run_sql_analysis.py
+
+Step 5: Test model inference on mock customer:
+   python -c "import joblib, pandas as pd; model=joblib.load('models/churn_model.pkl'); cust=pd.DataFrame([{'gender':'Female','SeniorCitizen':0,'Partner':'No','Dependents':'No','tenure':2,'PhoneService':'Yes','MultipleLines':'No','InternetService':'Fiber optic','OnlineSecurity':'No','OnlineBackup':'No','DeviceProtection':'No','TechSupport':'No','StreamingTV':'Yes','StreamingMovies':'Yes','Contract':'Month-to-month','PaperlessBilling':'Yes','PaymentMethod':'Electronic check','MonthlyCharges':95.50,'TotalCharges':191.00}]); print('Predicted Churn Prob:', f'{model.predict_proba(cust)[0,1]*100:.2f}%')"
+
+Step 6: Open Jupyter Notebooks:
+   jupyter notebook notebooks/
+
+================================================================================
+9. INTERVIEW TALKING POINTS & FREQUENTLY ASKED QUESTIONS (ENTERPRISE DATA SCIENCE)
+================================================================================
+
+Q1: Why did you choose Logistic Regression instead of Random Forest or XGBoost?
+A1: "In enterprise data science, business stakeholders and executives require
+interpretability. Logistic Regression with class-balanced weighting achieved
+78.61% Recall and 0.8418 ROC-AUC on our test set—nearly matching Random Forest
+(0.8434 ROC-AUC). Crucially, Logistic Regression provides mathematically rigorous
+Odds Ratios ($e^\beta$). We can tell leadership that Month-to-Month contracts multiply
+churn odds by 2.15x, and Two-Year contracts cut churn odds by 75%. It is fast,
+deployable at under 10 KB, and fully auditable."
+
+Q2: Why is Recall prioritized over Accuracy in this business problem?
+A2: "The dataset has a class imbalance (73.5% non-churn vs 26.5% churn). A naive
+model could predict that no customer ever leaves and achieve 73.5% accuracy, but
+it would be useless to the business. A False Negative (missing a churner) loses
+hundreds of dollars in customer lifetime value. A False Positive (sending an email
+or retention offer to a happy customer) costs pennies. Therefore, high Recall
+(catching ~8 out of 10 churners) is the primary optimization goal."
+
+Q3: How did you handle missing values in TotalCharges without data leakage?
+A3: "I audited the 11 records with empty spaces in TotalCharges and observed that
+all 11 had tenure = 0 months. These were new accounts enrolled before their first
+bill. Imputing 0.0 reflects ground-truth physical reality, avoids synthetic
+imputation distortion, and prevents deleting valuable new accounts."
+
+Q4: Why Welch's t-test instead of Student's t-test?
+A4: "Student's t-test assumes equal population variances (homoscedasticity).
+Retained customers and churned customers have unequal group sizes (5,174 vs 1,869)
+and unequal variances (std $31.09 vs $24.67). Welch's t-test does not assume
+equal variance and adjusts the degrees of freedom via the Welch-Satterthwaite
+equation, producing an unbiased p-value."
+
+Q5: How does SQL integrate with Python in this project?
+A5: "SQL is utilized for data warehouse aggregations, cohort segmentation, and
+window functions (DENSE_RANK) to extract real-time CRM call lists. Python handles
+advanced statistical hypothesis testing, data preprocessing pipelines, and
+machine learning inference."
+
+================================================================================
+END OF DOCUMENTATION
+================================================================================
